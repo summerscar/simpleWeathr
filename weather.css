@@ -1,0 +1,287 @@
+@media only screen and (max-width: 1080px), only screen and (max-device-width:1080px) {
+    html,body {
+        font-size:16.875px;
+    }
+}
+@media only screen and (max-width: 960px), only screen and (max-device-width:960px) {
+    html,body {
+        font-size:15px;
+    }
+}
+@media only screen and (max-width: 800px), only screen and (max-device-width:800px) {
+    html,body {
+        font-size:12.5px;
+    }
+}
+@media only screen and (max-width: 720px), only screen and (max-device-width:720px) {
+    html,body {
+        font-size:11.25px;
+    }
+}
+@media only screen and (max-width: 640px), only screen and (max-device-width:640px) {
+    html,body {
+        font-size:10px;
+    }
+}
+@media only screen and (max-width: 600px), only screen and (max-device-width:600px) {
+    html,body {
+        font-size:9.375px;
+    }
+}
+@media only screen and (max-width: 540px), only screen and (max-device-width:540px) {
+    html,body {
+        font-size:8.4375px;
+    }
+}
+@media only screen and (max-width: 480px), only screen and (max-device-width:480px) {
+    html,body {
+        font-size:7.5px;
+    }
+}
+@media only screen and (max-width: 414px), only screen and (max-device-width:414px) {
+    html,body {
+        font-size:6.46875px;
+    }
+}
+@media only screen and (max-width: 400px), only screen and (max-device-width:400px) {
+    html,body {
+        font-size:6.25px;
+    }
+}
+@media only screen and (max-width: 375px), only screen and (max-device-width:375px) {
+    html,body {
+        font-size:5.859375px;
+    }
+}
+@media only screen and (max-width: 360px), only screen and (max-device-width:360px) {
+    html,body {
+        font-size:5.625px;
+    }
+}
+@media only screen and (max-width: 320px), only screen and (max-device-width:320px) {
+    html,body {
+        font-size:5px;
+    }
+}
+@media only screen and (max-width: 240px), only screen and (max-device-width:240px) {
+    html, body {
+        font-size: 3.75px;
+    }
+}
+html,body{
+    margin: 0;
+    padding: 0;
+    background-color: #77b1eb;
+    overflow: auto;
+    color: #ffffff;
+
+    font-family:Microsoft Yahei;
+}
+[v-cloak] {
+    display: none;
+}
+#app{
+    text-align: center;
+    width: 100%;
+}
+header{
+    width: 100%;
+    overflow: hidden;
+    position: fixed;
+    top:0;
+    left: 0;
+    z-index: 1;
+    background-color: #77b1eb;
+    /*  position: absolute;
+      top:0;
+      left: 0;*/
+}
+header i{
+    cursor: pointer;
+}
+header i.el-icon-edit{
+    font-size: 3.2rem;
+    position: absolute;
+    top:1.1rem;
+    left: 1.1rem;
+}
+header i.el-icon-setting{
+    font-size: 3.5rem;
+    position: absolute;
+    top:1.1rem;
+    right: 1.1rem;
+
+}
+header span{
+    font-size: 3.5rem;
+    line-height: 5rem;
+    display: inline-block;
+    height: 5rem;
+}
+div.content{
+    position: relative;
+    padding-top:1rem;
+    margin-top: 5rem;
+    overflow: hidden;
+}
+div.content span.time{
+    position: absolute;
+    right: 1rem;
+    font-size: 2rem;
+}
+div.content span.weather{
+    font-size: 3rem;
+}
+div.content span.nowTmp{
+    font-size:13rem;
+    display: inline-block;
+    padding-top:2rem;
+    padding-bottom:1rem;
+    position: relative;
+    left: 1.5rem;
+    font-family:Microsoft YaHei;
+}
+div.content span.nowFl,div.content span.aqi{
+    margin:0.8rem;
+    display: inline-block;
+    font-size: 2rem;
+}
+#canvas{
+    background-color:transparent;
+    opacity: 0;
+    transition:opacity 0.5s;
+}
+#canvasA{
+    background-color:transparent;
+    opacity: 0;
+    transition:opacity 0.5s;
+}
+div.forecastDetial{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    font-size: 2rem;
+}
+div.forecastDetial div.detail{
+
+    width: 6rem;
+
+}
+hr{
+    border:1px solid rgba(255, 255, 255, 0.2);
+    margin:0.5rem 0;
+}
+div.windForecast hr,div.airForecast hr,div.suggestForecast hr{
+    border:1px solid rgba(255, 255, 255, 0.1);
+}
+div.rainPercent{
+
+}
+div.rainPercent div.rainDetail,div.hourlyForecast div.hourlyDetail{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    font-size: 2rem;
+    margin:0.5rem 0;
+}
+div.hourlyForecast div.hourlyDetail span{
+    padding: 0.2rem 0;
+}
+span.title{
+    font-size: 2.3rem;
+    display: inline-block;
+    margin: 0.6rem 0;
+}
+div.hourlyForecast div.hourlyDetail span{
+    display: block;
+}
+div.windForecast{
+    font-size: 0px;
+    padding:0 0 1rem 0;
+}
+div.windForecast div.detail span{
+    font-size: 2rem;
+}
+svg path{
+    opacity: 0;
+    transition:opacity 0.5s;
+}
+div.windForecast div.detail{
+    display: inline-block;
+    width: 50%;
+    text-align: center;
+    margin-top: 1rem ;
+}
+div.windForecast div.detailRight,div.airForecast div.detailRight{
+    display: flex;
+    justify-content:space-between ;
+    margin:0.4rem 1.3rem;
+}
+div.airForecast{
+    font-size: 2rem;
+
+}
+div.suggestForecast{
+    font-size: 2rem;
+}
+div.suggestForecast div.brf,div.suggestForecast div.txt{
+    padding: 0 4rem;
+    font-size: 2.1rem;
+    line-height: 2.5rem;
+}
+div.suggestForecast div.txt{
+    color: #f1f4f9;
+}
+#canvasB{
+    background-color: transparent;
+    opacity: 0;
+    transition:opacity 0.5s;
+}
+div.sunUpDown{
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+a{
+    text-decoration: none;
+    color: black;
+}
+li{
+    list-style: none;
+    padding: 1rem 0;
+    border-radius:4px;
+    border:1px solid #ffffff;
+}
+li:hover{
+    background-color: #eeeeee;
+}
+ul{
+    width: 100%;
+    margin:0;
+    padding: 0;
+    border:1px solid #bfcbd9;
+    border-top:0;
+    border-radius: 0 0 4px 4px;
+    position: absolute;
+    top:36px;
+    left: 0;
+    box-sizing:border-box;
+    background-color: white;
+
+
+}
+.el-progress-bar__outer{
+    background-color: rgba(255, 255, 255, 0.24);
+    height: 5px!important;
+
+}
+.el-progress-bar__inner{
+    background-color: white;
+}
+.el-row{
+    padding:1rem 0;
+}
+.el-message-box__wrapper{
+    top:35%;
+}
+.dialog-footer{
+    text-align: center;
+}

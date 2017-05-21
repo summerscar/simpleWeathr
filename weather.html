@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <title>极简天气</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+    <link href="https://cdn.bootcss.com/element-ui/1.3.3/theme-default/index.css" rel="stylesheet">
+    <link href="weather.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="app" v-cloak>
+
+    <header>
+        <div style="position: relative">
+        <i class="el-icon-edit"  @click="showDialog"></i>
+        <span>{{weather_basic.city}}</span>
+        <i class="el-icon-setting" @click="dialogTableVisible = true"></i>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="nowWeather">
+            <span class="weather">{{weather_now.cond.txt}}</span>
+            <span class="time"><span>更新 </span>{{weather_basic.update.loc|getTime}}</span>
+            <div><span class="nowTmp">{{weather_now.tmp}}°</span></div>
+            <div><span class="nowFl">体感 {{weather_now.fl}}°</span></div>
+            <div><span class="aqi">空气{{weather_aqi.city.qlty}}  {{weather_aqi.city.aqi}}&nbsp;&nbsp;&nbsp;PM2.5 {{weather_aqi.city.pm25}}</span></div>
+        </div>
+        <div class="forecast" style="width: 100%;height: 200px">
+            <canvas id="canvas" ></canvas>
+        </div>
+        <div class="forecastDetial">
+            <div class="detail"><div>今天</div><img :src="imgOne" width="55%" :alt="weather_daily_forecast[0].cond.txt_d"><div>{{weather_daily_forecast[0].cond.txt_d}}</div></div>
+            <div class="detail"><div>明天</div><img :src="imgTwo" width="55%" :alt="weather_daily_forecast[1].cond.txt_d"><div>{{weather_daily_forecast[1].cond.txt_d}}</div></div>
+            <div class="detail"><div>后天</div><img :src="imgThree" width="55%" :alt="weather_daily_forecast[2].cond.txt_d"><div>{{weather_daily_forecast[2].cond.txt_d}}</div></div>
+        </div>
+        <hr>
+        <div class="rainPercent">
+            <span class="title">降水概率</span>
+            <div class="rainDetail">
+                <div class="detail" v-for="list in weather_daily_forecast">{{list.pop}}%</div>
+               <!-- <div class="detail">{{weather_daily_forecast[1].pop}}%</div>
+                <div class="detail">{{weather_daily_forecast[2].pop}}%</div>-->
+            </div>
+        </div>
+        <hr>
+        <div class="hourlyForecast">
+            <span class="title">逐3小时预报</span>
+            <div class="hourlyDetail">
+                <div class="detail"  v-for="list in weather_hourly_forecast"><span>{{list.date|getTime}}</span><span>{{list.tmp}}°</span></div>
+                <div class="detail"  v-if="weather_hourly_forecast.length==0"><span>暂无数据</span></div>
+            </div>
+        </div>
+        <hr>
+        <div class="windForecast">
+            <div><span class="title">风和湿度</span></div>
+            <div class="detail detailLeft" style="font-size: 0px">
+                <canvas id="canvasA"></canvas>
+            </div>
+            <div class="detail" id="canvasRight">
+                <div style="padding: 0 2rem">
+                <el-progress :percentage="weather_now.hum|getNumber" :show-text=false ></el-progress>
+                </div>
+                <hr>
+                <div class="detailRight"><span>湿度</span><span>{{weather_now.hum}}%</span></div>
+                <hr>
+                <div class="detailRight"><span>风向</span><span>{{weather_now.wind.dir}}</span></div>
+                <hr>
+                <div class="detailRight"><span>风速</span><span>{{weather_now.wind.spd}}kmph</span></div>
+            </div>
+        </div>
+        <hr>
+        <div class="airForecast">
+            <div><span class="title">空气质量指数</span></div>
+            <el-row>
+                <el-col :span="12">
+                    <div style="position: relative">
+                        <el-progress type="circle" :percentage="aqiPercent" :show-text=false :width='w*0.25' :stroke-width=5></el-progress>
+                        <span style="position: absolute;left: 50%;top:50%; transform: translate(-50%,-50%);">{{weather_aqi.city.qlty}} {{weather_aqi.city.aqi}}</span>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <div class="detailRight"><span>PM2.5</span><span>{{weather_aqi.city.pm25}}μg/m3</span></div>
+                    <hr>
+                    <div class="detailRight"><span>PM10</span><span>{{weather_aqi.city.pm10}}μg/m3</span></div>
+                    <hr>
+                    <div class="detailRight"><span>NO2</span><span>{{weather_aqi.city.no2}}μg/m3</span></div>
+                    <hr>
+                    <div class="detailRight"><span>SO2</span><span>{{weather_aqi.city.so2}}μg/m3</span></div>
+                </el-col>
+            </el-row>
+        </div>
+        <hr>
+        <div class="sunUpDown">
+            <div><span class="title">日出日落</span></div>
+            <div style="font-size: 0px">
+            <canvas id="canvasB"></canvas>
+            </div>
+        </div>
+        <div class="suggestForecast">
+            <div><span class="title">生活指数</span></div>
+            <div style="text-align: left;padding-bottom: 2rem;">
+            <div class="brf">舒适度指数 {{weather_suggestion.comf.brf}}</div>
+            <div class="txt">{{weather_suggestion.comf.txt}}</div>
+            <hr>
+            <div class="brf">紫外线 {{weather_suggestion.uv.brf}}</div>
+            <div class="txt">{{weather_suggestion.uv.txt}}</div>
+            <hr>
+            <div class="brf">穿衣指数 {{weather_suggestion.drsg.brf}}</div>
+            <div class="txt">{{weather_suggestion.drsg.txt}}</div>
+            <hr>
+            <div class="brf">运动指数 {{weather_suggestion.sport.brf}}</div>
+            <div class="txt">{{weather_suggestion.sport.txt}}</div>
+            <hr>
+            <div class="brf">感冒指数 {{weather_suggestion.flu.brf}}</div>
+            <div class="txt">{{weather_suggestion.flu.txt}}</div>
+            </div>
+        </div>
+
+            <el-dialog title="城市设置" :visible.sync="dialogFormVisible" size="large">
+                <div  style="width: 100%;text-align: center;padding-bottom: 2rem">
+                    <div style="display: inline-block; width: 50%;position: relative">
+                        <el-input v-model="input" placeholder="请输入城市" @change="getCity"></el-input>
+                        <div>
+                            <ul v-if="getCityList.length!=0">
+                                <li v-for="(item,index) in getCityList" @click="addListCity(index)">{{item.city}} {{item.provinceZh}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="display: inline-block"><el-button :plain="true" type="info" icon="plus" @click="addData"></el-button></div>
+                </div>
+                    <table align="center" cellpadding="4" width="50%">
+                        <tr><td style="text-align: left">设为默认</td><td style="text-align: right">删除</td></tr>
+                        <tr v-for="(item,index) in formData">
+                            <td style="text-align: left"> <input type="radio" :id="index" :value="item.active" v-model="radio"><label :for="index">{{item.formCity}}</label></td>
+                            <td style="text-align: right"><el-button type="danger" icon="minus" size="mini" @click="delData(index)"></el-button></td>
+                        </tr>
+                    </table>
+                <span  v-if="formData.length==0">暂无数据...</span>
+                <div slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="dialogFormVisible = false;setCity()" v-loading.fullscreen.lock="fullscreenLoading">确 定</el-button>
+                    <el-button @click="dialogFormVisible = false">取 消</el-button>
+                </div>
+            </el-dialog>
+
+
+        <el-dialog title="关于" :visible.sync="dialogTableVisible">
+            <div style="margin: 2rem 0"><span>API:  </span><a href="https://www.heweather.com/" target="_blank"><span>和风天气</span></a></div>
+            <div style="margin: 2rem 0"><a href="http://weibo.com/u/5508256828" target="_blank">@夏日_伤痕_</a></div>
+            <el-button @click="refresh" size="small" type="primary">清空本地存储</el-button>
+        </el-dialog>
+
+
+    </div>
+
+
+<!--
+    <el-button type="success" @click="show" v-loading.fullscreen.lock="fullscreenLoading">显示</el-button>-->
+
+</div>
+
+
+  <!--  <script src="vue.js"></script>-->
+    <script src="https://cdn.bootcss.com/vue/2.3.3/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.16.1/axios.min.js"></script>
+    <script src="https://cdn.bootcss.com/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/1.3.3/index.js"></script>
+    <script src="weather.js"></script>
+
+
+
+</body>
+
+</html>
