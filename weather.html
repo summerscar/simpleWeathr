@@ -12,9 +12,13 @@
 <div id="app" v-cloak>
 
     <header>
-        <div style="position: relative">
+        <div style="position: relative;transform-style: preserve-3d;">
         <i class="el-icon-edit"  @click="showDialog"></i>
-        <span>{{weather_basic.city}}</span>
+
+            <transition name="fade" mode="out-in">
+                <span v-if="!addShow" key="one">{{weather_basic.city}}</span>
+                <span class="add" id="add" v-else key="two">{{weather_now.cond.txt}}&nbsp;&nbsp;{{weather_now.tmp}}°</span>
+            </transition>
         <i class="el-icon-setting" @click="dialogTableVisible = true"></i>
         </div>
     </header>
@@ -128,12 +132,12 @@
                             </ul>
                         </div>
                     </div>
-                    <div style="display: inline-block"><el-button :plain="true" type="info" icon="plus" @click="addData"></el-button></div>
+                    <div style="display: inline-block"><el-button :plain="true" type="info" icon="plus" @click="addData" :disabled="input==''"></el-button></div>
                 </div>
-                    <table align="center" cellpadding="4" width="50%">
+                    <table align="center" width="50%">
                         <tr><td style="text-align: left">设为默认</td><td style="text-align: right">删除</td></tr>
                         <tr v-for="(item,index) in formData">
-                            <td style="text-align: left"> <input type="radio" :id="index" :value="item.active" v-model="radio"><label :for="index">{{item.formCity}}</label></td>
+                            <td style="text-align: left;"> <input type="radio" :id="index" :value="item.active" v-model="radio"><label :for="index">{{item.formCity}}</label></td>
                             <td style="text-align: right"><el-button type="danger" icon="minus" size="mini" @click="delData(index)"></el-button></td>
                         </tr>
                     </table>

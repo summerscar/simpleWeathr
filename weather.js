@@ -37,7 +37,10 @@ var vm=new Vue({
         input: '',
         radio: 'CN101190101',
         formData: [],
-        getCityList:[]
+        getCityList:[],
+        scroll:'',
+        scrollHeight:'',
+        addShow:false
 
 
         /*    maxAvg:null,
@@ -69,6 +72,16 @@ var vm=new Vue({
          }, 3000);
 
          },*/
+        menu:function () {
+            this.scroll = document.body.scrollTop;
+            if(parseFloat(this.scroll/this.scrollHeight)*100>10){
+                this.addShow=true;
+
+            }
+            else {
+                this.addShow=false;
+            }
+        },
         getCity: _.debounce(function () {
                 axios.get('./cityList.json')
                     .then(function(response){
@@ -90,7 +103,7 @@ var vm=new Vue({
                     }.bind(this));
 
             },
-            500
+            300
         ),
         addListCity:function (index) {
             if(this.formData.length>=3){
@@ -254,7 +267,19 @@ var vm=new Vue({
                     this.weather_now = response.data.HeWeather5[0].now;
                     this.weather_basic = response.data.HeWeather5[0].basic;
                     this.weather_daily_forecast = response.data.HeWeather5[0].daily_forecast;
-                    this.weather_suggestion = response.data.HeWeather5[0].suggestion;
+                    if(response.data.HeWeather5[0].suggestion!=undefined){
+                        this.weather_suggestion = response.data.HeWeather5[0].suggestion;}
+                    else {
+                        this.weather_suggestion={
+                            "comf": {"brf": "无数据", "txt": "无数据"},
+                            "cw": { "brf": "无数据","txt": "无数据"},
+                            "drsg": {"brf": "无数据", "txt": "无数据"},
+                            "flu": {"brf": "无数据", "txt": "无数据"},
+                            "sport": {"brf": "无数据", "txt": "无数据"},
+                            "trav": {"brf": "无数据", "txt": "无数据"},
+                            "uv": {"brf": "无数据", "txt": "无数据"}
+                        }
+                    }
                     this.weather_hourly_forecast = response.data.HeWeather5[0].hourly_forecast;
                     //  保存city
 
@@ -396,6 +421,8 @@ var vm=new Vue({
     },
     mounted:function () {
         // localStorage.clear();
+
+        window.addEventListener('scroll', this.menu);
         if( localStorage.formData){
             this.formData=JSON.parse(localStorage.formData)
         }
@@ -435,8 +462,239 @@ var vm=new Vue({
                 this.weather_now = response.data.HeWeather5[0].now;
                 this.weather_basic = response.data.HeWeather5[0].basic;
                 this.weather_daily_forecast = response.data.HeWeather5[0].daily_forecast;
-                this.weather_suggestion = response.data.HeWeather5[0].suggestion;
+                if(response.data.HeWeather5[0].suggestion!=undefined){
+                    this.weather_suggestion = response.data.HeWeather5[0].suggestion;}
+                else {
+                    this.weather_suggestion={
+                        "comf": {"brf": "无数据", "txt": "无数据"},
+                        "cw": { "brf": "无数据","txt": "无数据"},
+                        "drsg": {"brf": "无数据", "txt": "无数据"},
+                        "flu": {"brf": "无数据", "txt": "无数据"},
+                        "sport": {"brf": "无数据", "txt": "无数据"},
+                        "trav": {"brf": "无数据", "txt": "无数据"},
+                        "uv": {"brf": "无数据", "txt": "无数据"}
+                    }
+                }
                 this.weather_hourly_forecast = response.data.HeWeather5[0].hourly_forecast;
+                //延时初始化canvas
+                setTimeout(function () {
+                    this.scrollHeight=document.body.scrollHeight;
+                    //svg初始化
+                    document.getElementsByTagName('path')[0].attributes.stroke.nodeValue="#ffffff";
+                    document.getElementsByTagName('path')[1].attributes.stroke.nodeValue="#ffffff";
+                    document.getElementsByTagName('path')[0].style.opacity=0.25;
+                    document.getElementsByTagName('path')[1].style.opacity=1;
+
+
+
+                    var w=window.innerWidth
+                        || document.documentElement.clientWidth
+                        || document.body.clientWidth;
+                    this.w=w;
+                    this.canvas = document.getElementById('canvas');
+                    this.context= this.canvas.getContext('2d');
+                    this.canvasRight_h = document.getElementById('canvasRight').offsetHeight;
+                    this.canvasA = document.getElementById('canvasA');
+                    this.contextA= this.canvasA.getContext('2d');
+                    this.canvasB = document.getElementById('canvasB');
+                    this.contextB= this.canvasB.getContext('2d');
+                    //缓入
+                    this.canvas.style.opacity='1';
+                    this.canvasA.style.opacity='1';
+                    this.canvasB.style.opacity='1';
+                    // 屏幕的设备像素比
+                    var devicePixelRatio = window.devicePixelRatio || 1;
+
+                    // 浏览器在渲染canvas之前存储画布信息的像素比
+                    var backingStoreRatio = this.context.webkitBackingStorePixelRatio ||
+                        this.context.mozBackingStorePixelRatio ||
+                        this.context.msBackingStorePixelRatio ||
+                        this.context.oBackingStorePixelRatio ||
+                        this.context.backingStorePixelRatio || 1;
+
+                    // canvas的实际渲染倍率
+                    var ratio = devicePixelRatio / backingStoreRatio;
+                    this.ratio=ratio;
+                    this.canvas.style.width = this.w+'px';
+                    this.canvas.style.height = '200px';
+                    this.canvas.width = this.w * this.ratio;
+                    this.canvas.height = 200 * this.ratio;
+
+                    this.canvasA.style.width = this.w/2+'px';
+                    this.canvasA.style.height =  this.canvasRight_h;
+                    this.canvasA.width = this.w/2 * this.ratio;
+                    this.canvasA.height = this.canvasRight_h *this.ratio;
+
+                    this.canvasB.style.width = this.w+'px';
+                    this.canvasB.style.height = '160px';
+                    this.canvasB.width = this.w * this.ratio;
+                    this.canvasB.height = 160 * this.ratio;
+
+
+                    //绘制初始化
+
+                    this.context.lineWidth=1.5*this.ratio;
+                    this.context.strokeStyle='#ffffff';
+
+                    //绘制max
+                    this.context.beginPath();
+                    this.context.moveTo(this.ratio*this.w*0.125,50*this.ratio-this.intervalMax1*this.ratio*this.interval);
+                    this.context.quadraticCurveTo(this.ratio*this.w*0.3125,50*this.ratio-this.intervalMax2*this.ratio*this.interval, this.ratio*this.w*0.5,50*this.ratio-this.intervalMax2*this.ratio*this.interval);
+                    this.context.quadraticCurveTo(this.ratio*this.w*0.6875,50*this.ratio-this.intervalMax2*this.ratio*this.interval,this.ratio*this.w*0.875,50*this.ratio-this.intervalMax3*this.ratio*this.interval);
+                    this.context.stroke();
+                    //绘制min
+                    this.context.beginPath();
+                    this.context.moveTo(this.ratio*this.w*0.125,150*this.ratio-this.intervalMin1*this.ratio*this.interval);
+                    this.context.quadraticCurveTo(this.ratio*this.w*0.3125,150*this.ratio-this.intervalMin2*this.ratio*this.interval,this.ratio*this.w*0.5,150*this.ratio-this.intervalMin2*this.ratio*this.interval);
+                    this.context.quadraticCurveTo(this.ratio*this.w*0.6875,150*this.ratio-this.intervalMin2*this.ratio*this.interval,this.ratio*this.w*0.875,150*this.ratio-this.intervalMin3*this.ratio*this.interval);
+                    this.context.stroke();
+                    //绘制文字
+                    var gradient=this.context.createLinearGradient(0,0,this.w,0);
+                    gradient.addColorStop("0","white");
+                    gradient.addColorStop("1.0","white");
+                    this.context.font=12*this.ratio+"px Arial";
+                    this.context.textAlign="center";
+                    this.context.fillStyle=gradient;
+                    this.context.fillText(this.weather_daily_forecast[0].tmp.max+"°",this.ratio*this.w*0.125,50*this.ratio-this.intervalMax1*this.ratio*this.interval+40);
+                    this.context.fillText(this.weather_daily_forecast[1].tmp.max+"°",this.ratio*this.w*0.5,50*this.ratio-this.intervalMax2*this.ratio*this.interval+40);
+                    this.context.fillText(this.weather_daily_forecast[2].tmp.max+"°",this.ratio*this.w*0.875,50*this.ratio-this.intervalMax3*this.ratio*this.interval+40);
+
+
+
+                    this.context.fillText(this.weather_daily_forecast[0].tmp.min+"°",this.ratio*this.w*0.125,150*this.ratio-this.intervalMin1*this.ratio*this.interval+35);
+                    this.context.fillText(this.weather_daily_forecast[1].tmp.min+"°",this.ratio*this.w*0.5,150*this.ratio-this.intervalMin2*this.ratio*this.interval+35);
+                    this.context.fillText(this.weather_daily_forecast[2].tmp.min+"°",this.ratio*this.w*0.875,150*this.ratio-this.intervalMin3*this.ratio*this.interval+35);
+
+
+                    //日出日落
+                    this.contextB.lineWidth=1.5*this.ratio;
+                    this.contextB.strokeStyle='#ffffff';
+                    this.contextB.translate(this.w/2*this.ratio,160*this.ratio);
+                    this.contextB.rotate(180*Math.PI/180);
+
+                    this.contextB.save();
+                    this.contextB.setLineDash([10*this.ratio, 8*this.ratio]);
+                    this.contextB.beginPath();
+                    this.contextB.arc(0,0,130*this.ratio,0,Math.PI);
+                    this.contextB.stroke();
+                    this.contextB.restore();
+
+                    //绘制太阳
+                    this.contextB.save();
+                    this.contextB.rotate(this.sunPercent*180*Math.PI/180);
+                    this.contextB.beginPath();
+                    this.contextB.arc(130*this.ratio,0,15*this.ratio,0,2*Math.PI);
+                    this.contextB.stroke();
+                    this.contextB.restore();
+                    //日落日出文字
+                    this.contextB.save();
+                    this.contextB.textBaseline="bottom";
+                    this.contextB.rotate(180*Math.PI/180);
+                    this.contextB.font=12*this.ratio+"px Microsoft Yahei";
+                    this.contextB.fillStyle=gradient;
+                    this.contextB.fillText("日出"+this.weather_daily_forecast[0].astro.sr,-115*this.ratio,-5*this.ratio);
+                    this.contextB.textAlign="right";
+                    this.contextB.fillText("日落"+this.weather_daily_forecast[0].astro.ss,115*this.ratio,-5*this.ratio);
+                    this.contextB.restore();
+
+                    //风车canvas
+
+
+                    setInterval(function () {
+
+                            this.contextA.clearRect(-1000,-1000,2000,2000);
+                            this.contextA.lineWidth=1.5*this.ratio;
+                            this.contextA.strokeStyle='#ffffff';
+                            this.contextA.fillStyle='#ffffff';
+
+                            // 第一个风车架
+                            this.contextA.save();
+                            this.contextA.beginPath();
+                            this.contextA.moveTo(this.w*5/48*this.ratio,this.canvasRight_h*this.ratio);
+                            this.contextA.lineTo(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
+                            this.contextA.lineTo(this.w*9/48*this.ratio,this.canvasRight_h*this.ratio);
+                            this.contextA.stroke();
+                            this.contextA.restore();
+                            //第二个风车架
+                            this.contextA.save();
+                            this.contextA.beginPath();
+                            this.contextA.moveTo(this.w*14/48*this.ratio,this.canvasRight_h*this.ratio);
+                            this.contextA.lineTo(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
+                            this.contextA.lineTo(this.w*16/48*this.ratio,this.canvasRight_h*this.ratio);
+                            this.contextA.stroke();
+                            this.contextA.restore();
+                            //第一个风车
+                            this.contextA.save();
+                            this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
+                            this.contextA.rotate(this.deg*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+
+                            this.contextA.save();
+                            this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
+                            this.contextA.rotate((120+this.deg)*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+
+                            this.contextA.save();
+                            this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
+                            this.contextA.rotate((240+this.deg)*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+
+                            //第二个风车
+                            this.contextA.save();
+                            this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
+                            this.contextA.rotate(this.deg*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+
+                            this.contextA.save();
+                            this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
+                            this.contextA.rotate((120+this.deg)*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+
+                            this.contextA.save();
+                            this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
+                            this.contextA.rotate((240+this.deg)*Math.PI/180);
+                            this.contextA.beginPath();
+                            this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
+                            this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
+                            this.contextA.closePath();
+                            this.contextA.stroke();
+                            this.contextA.fill();
+                            this.contextA.restore();
+                            this.deg=this.deg+this.intervalDeg;
+                        }.bind(this)
+                        ,50)
+
+                }.bind(this),1000)
 
             }.bind(this))
             .catch(function (error) {
@@ -446,224 +704,7 @@ var vm=new Vue({
             }.bind(this));
 
 
-        //延时初始化canvas
-        setTimeout(function () {
-            //svg初始化
-            document.getElementsByTagName('path')[0].attributes.stroke.nodeValue="#ffffff";
-            document.getElementsByTagName('path')[1].attributes.stroke.nodeValue="#ffffff";
-            document.getElementsByTagName('path')[0].style.opacity=0.25;
-            document.getElementsByTagName('path')[1].style.opacity=1;
 
-
-
-            var w=window.innerWidth
-                || document.documentElement.clientWidth
-                || document.body.clientWidth;
-            this.w=w;
-            this.canvas = document.getElementById('canvas');
-            this.context= this.canvas.getContext('2d');
-            this.canvasRight_h = document.getElementById('canvasRight').offsetHeight;
-            this.canvasA = document.getElementById('canvasA');
-            this.contextA= this.canvasA.getContext('2d');
-            this.canvasB = document.getElementById('canvasB');
-            this.contextB= this.canvasB.getContext('2d');
-            //缓入
-            this.canvas.style.opacity='1';
-            this.canvasA.style.opacity='1';
-            this.canvasB.style.opacity='1';
-            // 屏幕的设备像素比
-            var devicePixelRatio = window.devicePixelRatio || 1;
-
-            // 浏览器在渲染canvas之前存储画布信息的像素比
-            var backingStoreRatio = this.context.webkitBackingStorePixelRatio ||
-                this.context.mozBackingStorePixelRatio ||
-                this.context.msBackingStorePixelRatio ||
-                this.context.oBackingStorePixelRatio ||
-                this.context.backingStorePixelRatio || 1;
-
-            // canvas的实际渲染倍率
-            var ratio = devicePixelRatio / backingStoreRatio;
-            this.ratio=ratio;
-            this.canvas.style.width = this.w+'px';
-            this.canvas.style.height = '200px';
-            this.canvas.width = this.w * this.ratio;
-            this.canvas.height = 200 * this.ratio;
-
-            this.canvasA.style.width = this.w/2+'px';
-            this.canvasA.style.height =  this.canvasRight_h;
-            this.canvasA.width = this.w/2 * this.ratio;
-            this.canvasA.height = this.canvasRight_h *this.ratio;
-
-            this.canvasB.style.width = this.w+'px';
-            this.canvasB.style.height = '160px';
-            this.canvasB.width = this.w * this.ratio;
-            this.canvasB.height = 160 * this.ratio;
-
-
-            //绘制初始化
-
-            this.context.lineWidth=1.5*this.ratio;
-            this.context.strokeStyle='#ffffff';
-
-            //绘制max
-            this.context.beginPath();
-            this.context.moveTo(this.ratio*this.w*0.125,50*this.ratio-this.intervalMax1*this.ratio*this.interval);
-            this.context.quadraticCurveTo(this.ratio*this.w*0.3125,50*this.ratio-this.intervalMax2*this.ratio*this.interval, this.ratio*this.w*0.5,50*this.ratio-this.intervalMax2*this.ratio*this.interval);
-            this.context.quadraticCurveTo(this.ratio*this.w*0.6875,50*this.ratio-this.intervalMax2*this.ratio*this.interval,this.ratio*this.w*0.875,50*this.ratio-this.intervalMax3*this.ratio*this.interval);
-            this.context.stroke();
-            //绘制min
-            this.context.beginPath();
-            this.context.moveTo(this.ratio*this.w*0.125,150*this.ratio-this.intervalMin1*this.ratio*this.interval);
-            this.context.quadraticCurveTo(this.ratio*this.w*0.3125,150*this.ratio-this.intervalMin2*this.ratio*this.interval,this.ratio*this.w*0.5,150*this.ratio-this.intervalMin2*this.ratio*this.interval);
-            this.context.quadraticCurveTo(this.ratio*this.w*0.6875,150*this.ratio-this.intervalMin2*this.ratio*this.interval,this.ratio*this.w*0.875,150*this.ratio-this.intervalMin3*this.ratio*this.interval);
-            this.context.stroke();
-            //绘制文字
-            var gradient=this.context.createLinearGradient(0,0,this.w,0);
-            gradient.addColorStop("0","white");
-            gradient.addColorStop("1.0","white");
-            this.context.font=12*this.ratio+"px Arial";
-            this.context.textAlign="center";
-            this.context.fillStyle=gradient;
-            this.context.fillText(this.weather_daily_forecast[0].tmp.max+"°",this.ratio*this.w*0.125,50*this.ratio-this.intervalMax1*this.ratio*this.interval+40);
-            this.context.fillText(this.weather_daily_forecast[1].tmp.max+"°",this.ratio*this.w*0.5,50*this.ratio-this.intervalMax2*this.ratio*this.interval+40);
-            this.context.fillText(this.weather_daily_forecast[2].tmp.max+"°",this.ratio*this.w*0.875,50*this.ratio-this.intervalMax3*this.ratio*this.interval+40);
-
-
-
-            this.context.fillText(this.weather_daily_forecast[0].tmp.min+"°",this.ratio*this.w*0.125,150*this.ratio-this.intervalMin1*this.ratio*this.interval+35);
-            this.context.fillText(this.weather_daily_forecast[1].tmp.min+"°",this.ratio*this.w*0.5,150*this.ratio-this.intervalMin2*this.ratio*this.interval+35);
-            this.context.fillText(this.weather_daily_forecast[2].tmp.min+"°",this.ratio*this.w*0.875,150*this.ratio-this.intervalMin3*this.ratio*this.interval+35);
-
-
-            //日出日落
-            this.contextB.lineWidth=1.5*this.ratio;
-            this.contextB.strokeStyle='#ffffff';
-            this.contextB.translate(this.w/2*this.ratio,160*this.ratio);
-            this.contextB.rotate(180*Math.PI/180);
-
-            this.contextB.save();
-            this.contextB.setLineDash([10*this.ratio, 8*this.ratio]);
-            this.contextB.beginPath();
-            this.contextB.arc(0,0,130*this.ratio,0,Math.PI);
-            this.contextB.stroke();
-            this.contextB.restore();
-
-            //绘制太阳
-            this.contextB.save();
-            this.contextB.rotate(this.sunPercent*180*Math.PI/180);
-            this.contextB.beginPath();
-            this.contextB.arc(130*this.ratio,0,15*this.ratio,0,2*Math.PI);
-            this.contextB.stroke();
-            this.contextB.restore();
-            //日落日出文字
-            this.contextB.save();
-            this.contextB.textBaseline="bottom";
-            this.contextB.rotate(180*Math.PI/180);
-            this.contextB.font=12*this.ratio+"px Microsoft Yahei";
-            this.contextB.fillStyle=gradient;
-            this.contextB.fillText("日出"+this.weather_daily_forecast[0].astro.sr,-115*this.ratio,-5*this.ratio);
-            this.contextB.textAlign="right";
-            this.contextB.fillText("日落"+this.weather_daily_forecast[0].astro.ss,115*this.ratio,-5*this.ratio);
-            this.contextB.restore();
-
-            //风车canvas
-
-
-            setInterval(function () {
-
-                    this.contextA.clearRect(-1000,-1000,2000,2000);
-                    this.contextA.lineWidth=1.5*this.ratio;
-                    this.contextA.strokeStyle='#ffffff';
-                    this.contextA.fillStyle='#ffffff';
-
-                    // 第一个风车架
-                    this.contextA.save();
-                    this.contextA.beginPath();
-                    this.contextA.moveTo(this.w*5/48*this.ratio,this.canvasRight_h*this.ratio);
-                    this.contextA.lineTo(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
-                    this.contextA.lineTo(this.w*9/48*this.ratio,this.canvasRight_h*this.ratio);
-                    this.contextA.stroke();
-                    this.contextA.restore();
-                    //第二个风车架
-                    this.contextA.save();
-                    this.contextA.beginPath();
-                    this.contextA.moveTo(this.w*14/48*this.ratio,this.canvasRight_h*this.ratio);
-                    this.contextA.lineTo(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
-                    this.contextA.lineTo(this.w*16/48*this.ratio,this.canvasRight_h*this.ratio);
-                    this.contextA.stroke();
-                    this.contextA.restore();
-                    //第一个风车
-                    this.contextA.save();
-                    this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
-                    this.contextA.rotate(this.deg*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-
-                    this.contextA.save();
-                    this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
-                    this.contextA.rotate((120+this.deg)*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-
-                    this.contextA.save();
-                    this.contextA.translate(this.w*7/48*this.ratio,this.canvasRight_h*4/12*this.ratio);
-                    this.contextA.rotate((240+this.deg)*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/4*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-
-                    //第二个风车
-                    this.contextA.save();
-                    this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
-                    this.contextA.rotate(this.deg*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-
-                    this.contextA.save();
-                    this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
-                    this.contextA.rotate((120+this.deg)*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-
-                    this.contextA.save();
-                    this.contextA.translate(this.w*15/48*this.ratio,this.canvasRight_h*2/3*this.ratio);
-                    this.contextA.rotate((240+this.deg)*Math.PI/180);
-                    this.contextA.beginPath();
-                    this.contextA.arc(0,-8*this.ratio,5*this.ratio,5/12*Math.PI,7/12*Math.PI);
-                    this.contextA.lineTo(0,-(this.canvasRight_h*1/8*this.ratio));
-                    this.contextA.closePath();
-                    this.contextA.stroke();
-                    this.contextA.fill();
-                    this.contextA.restore();
-                    this.deg=this.deg+this.intervalDeg;
-                }.bind(this)
-                ,50)
-
-        }.bind(this),1000)
 
     }
 
