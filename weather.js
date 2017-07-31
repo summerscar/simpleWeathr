@@ -407,7 +407,7 @@ var vm=new Vue({
         },
         intervalDeg:function () {
 
-            return parseInt(this.weather_now.wind.spd)/1.4
+            return parseInt(this.weather_now.wind.spd)/3
         }
 
 
@@ -692,7 +692,7 @@ var vm=new Vue({
                             this.contextA.restore();
                             this.deg=this.deg+this.intervalDeg;
                         }.bind(this)
-                        ,50)
+                        ,17)
 
                 }.bind(this),1000)
 
