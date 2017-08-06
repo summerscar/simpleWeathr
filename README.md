@@ -13,4 +13,4 @@
 
 API：和风天气
 
-demo地址：http://summerscar.com/weather/weather.html
+demo地址：http://summerscar.me/simpleWeathr/weather.html
